@@ -240,14 +240,27 @@
 #undef internal_syscall0
 #define internal_syscall0(number, err, dummy...)			\
 ({									\
-  unsigned long int resultvar;        \
+  unsigned long int resultvar = 0;        \
   if (FLEXSC_REGISTERED) {          \
-    asm volatile (      \
-      ""      \
-      : "=a" (resultvar)    \
-      : "r" (number)    \
-      : "memory"    \
-      )     \
+  	int i, index;		\
+  	i = 0;		\
+  	index = -1;		\
+  	for (i = 0; i < 128; ++i) {		\
+  		if (*(short *)(_syscall_page + (i << 6) + 6) == 0) {		\
+  			*(short *)(_syscall_page + (i << 6) + 6) = 3;		\
+  			*(long *)(_syscall_page + (i << 6)) = number;		\
+  			index = i;		\
+  			*(short *)(_syscall_page + (i << 6) + 6) = 1;		\
+  			break;		\
+  		}			\
+  	}		\
+  	if (index != -1)	\
+  	while (1) {		\
+  		if (*(short *)(_syscall_page + (index << 6) + 6) == 2) {		\
+  			resultvar = *(long *)(_syscall_page + (index << 6) + 8);		\
+  			*(short *)(_syscall_page + (index << 6) + 6) = 0;		\
+  		}		\
+  	}		\
   }           \
   else {        \
     asm volatile (              \
