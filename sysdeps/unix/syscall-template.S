@@ -51,6 +51,8 @@
 #define T_PSEUDO_END_NOERRNO(SYMBOL)		PSEUDO_END_NOERRNO (SYMBOL)
 #define T_PSEUDO_END_ERRVAL(SYMBOL)		PSEUDO_END_ERRVAL (SYMBOL)
 
+movq varccc, %rax
+
 #if SYSCALL_NOERRNO
 
 /* This kind of system call stub never returns an error.

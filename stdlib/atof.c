@@ -19,7 +19,7 @@
 
 #undef	atof
 
-
+int hehe = 1;
 /* Convert a string to a double.  */
 double
 atof (const char *nptr)

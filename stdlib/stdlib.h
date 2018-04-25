@@ -91,15 +91,13 @@ __extension__ typedef struct
 #define	EXIT_FAILURE	1	/* Failing exit status.  */
 #define	EXIT_SUCCESS	0	/* Successful exit status.  */
 
-
-#if !defined __flexsc_constants
-void *_syscall_page;
-
-int FLEXSC_REGISTERED;
-int flexSC_register(void);
-int write_syscall(long args[], unsigned int syscall_num);
-unsigned long wait_syscall(int index);
+#ifndef __flexsc_constants
 # define __flexsc_constants  1
+volatile void *_syscall_page;
+typedef long (*flexSC_syscall_t)(long *sysargs, unsigned int sysnum);
+//flexSC_syscall_t __flexsc_syscall_handle;
+int FLEXSC_REGISTERED;
+extern int flexSC_register(void);
 #endif
 
 /* Maximum length of a multibyte character in the current locale.  */

@@ -17,6 +17,7 @@
    <http://www.gnu.org/licenses/>.  */
 
 #include <time.h>
+#include <stdio.h>
 
 #ifdef SHARED
 
@@ -49,11 +50,14 @@ libc_hidden_def (time)
 
 # include <sysdep.h>
 
+
 time_t
 time (time_t *t)
 {
-  INTERNAL_SYSCALL_DECL (err);
-  return INTERNAL_SYSCALL (time, err, 1, t);
+
+    INTERNAL_SYSCALL_DECL (err);
+    printf("%s\n", "HEHE");
+    return INTERNAL_SYSCALL (time, err, 1, t);
 }
 
 #endif

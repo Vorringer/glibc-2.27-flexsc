@@ -465,7 +465,7 @@ $(objpfx)rtld-libc.a: $(objpfx)librtld.mk FORCE
 	$(MAKE) -f $< -f rtld-Rules
 
 $(objpfx)librtld.os: $(objpfx)dl-allobjs.os $(objpfx)rtld-libc.a
-	$(LINK.o) -nostdlib -nostartfiles -r -o $@ '-Wl,-(' $^ -lgcc '-Wl,-)' \
+	$(LINK.o) -nostdlib -nostartfiles -fPIC -r -o $@ '-Wl,-(' $^ -lgcc '-Wl,-)' \
 		  -Wl,-Map,$@.map
 
 generated += librtld.map librtld.mk rtld-libc.a librtld.os.map
@@ -475,7 +475,7 @@ z-now-yes = -Wl,-z,now
 $(objpfx)ld.so: $(objpfx)librtld.os $(ld-map)
 # Link into a temporary file so that we don't touch $@ at all
 # if the sanity check below fails.
-	$(LINK.o) -nostdlib -nostartfiles -shared -o $@.new		\
+	$(LINK.o) -nostdlib -nostartfiles -fPIC -shared -o $@.new		\
 		  $(LDFLAGS-rtld) -Wl,-z,defs $(z-now-$(bind-now))	\
 		  $(filter-out $(map-file),$^) $(load-map-file)		\
 		  -Wl,-soname=$(rtld-installed-name)			\

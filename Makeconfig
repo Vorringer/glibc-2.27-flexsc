@@ -324,9 +324,9 @@ endif
 # Default flags to pass the C compiler.
 ifndef default_cflags
 ifeq ($(release),stable)
-default_cflags := -g -O2
+default_cflags := -g -O2 -fPIC
 else
-default_cflags := -g -O
+default_cflags := -g -O -fPIC
 endif
 endif
 
@@ -414,7 +414,7 @@ link-extra-libs-tests = $(libsupport)
 # Command for linking PIE programs with the C library.
 ifndef +link-pie
 +link-pie-before-libc = $(CC) $(if $($(@F)-no-pie),$(no-pie-ldflag),-pie) \
-	     -Wl,-O1 -nostdlib -nostartfiles -o $@ \
+	     -Wl,-O1 -nostdlib -nostartfiles -fPIC -o $@ \
 	     $(sysdep-LDFLAGS) $(LDFLAGS) $(LDFLAGS-$(@F)) \
 	     $(combreloc-LDFLAGS) $(relro-LDFLAGS) $(hashstyle-LDFLAGS) \
 	     $(firstword $(CRT-$(@F)) $(csu-objpfx)S$(start-installed-name)) \
@@ -442,7 +442,7 @@ endef
 endif
 # Command for statically linking programs with the C library.
 ifndef +link-static
-+link-static-before-libc = $(CC) -nostdlib -nostartfiles -static -o $@ \
++link-static-before-libc = $(CC) -nostdlib -nostartfiles -fPIC -static -o $@ \
 	      $(if $($(@F)-no-pie),$(no-pie-ldflag),$(default-pie-ldflag)) \
 	      $(sysdep-LDFLAGS) $(LDFLAGS) $(LDFLAGS-$(@F))  \
 	      $(firstword $(CRT-$(@F)) $(csu-objpfx)$(real-static-start-installed-name)) \
@@ -473,7 +473,7 @@ ifeq (yes,$(build-pie-default))
 +link-tests = $(+link-pie-tests)
 +link-printers-tests = $(+link-pie-printers-tests)
 else  # not build-pie-default
-+link-before-libc = $(CC) -nostdlib -nostartfiles -o $@ \
++link-before-libc = $(CC) -nostdlib -nostartfiles -fPIC -o $@ \
 	      $(sysdep-LDFLAGS) $(LDFLAGS) $(LDFLAGS-$(@F)) \
 	      $(combreloc-LDFLAGS) $(relro-LDFLAGS) $(hashstyle-LDFLAGS) \
 	      $(firstword $(CRT-$(@F)) $(csu-objpfx)$(start-installed-name)) \
@@ -1202,7 +1202,7 @@ all-subdirs = csu assert ctype locale intl catgets math setjmp signal	    \
 	      grp pwd posix io termios resource misc socket sysvipc gmon    \
 	      gnulib iconv iconvdata wctype manual shadow gshadow po argp   \
 	      crypt localedata timezone rt conform debug mathvec support    \
-	      dlfcn elf
+	      dlfcn elf flexSC
 
 ifndef avoid-generated
 # sysd-sorted itself will contain rules making the sysd-sorted target

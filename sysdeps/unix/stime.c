@@ -22,6 +22,7 @@
 
 /* Set the system clock to *WHEN.  */
 
+
 int
 stime (const time_t *when)
 {
