@@ -14,6 +14,7 @@ extern void *_syscall_page;
 extern int FLEXSC_REGISTERED;
 extern const char *syscall_file;
 
+long hehehe = 1;
 
 _syscall_page = NULL;
 FLEXSC_REGISTERED = 0;

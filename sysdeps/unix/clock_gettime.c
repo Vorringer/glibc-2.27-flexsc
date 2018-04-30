@@ -23,6 +23,7 @@
 #include <libc-internal.h>
 #include <ldsodefs.h>
 
+long hehehehe = 1;
 
 #if HP_TIMING_AVAIL
 /* Clock frequency of the processor.  We make it a 64-bit variable

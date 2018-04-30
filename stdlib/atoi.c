@@ -19,7 +19,7 @@
 
 #undef	atoi
 
-
+long hahahaha = 1;
 /* Convert a string to an int.  */
 int
 atoi (const char *nptr)

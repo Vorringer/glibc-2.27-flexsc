@@ -22,7 +22,6 @@
 #include <sysdeps/unix/sysv/linux/sysdep.h>
 #include <sysdeps/unix/x86_64/sysdep.h>
 #include <tls.h>
-
 #if IS_IN (rtld)
 # include <dl-sysdep.h>		/* Defines RTLD_PRIVATE_ERRNO.  */
 #endif
@@ -53,7 +52,6 @@
 
 
 #ifdef __ASSEMBLER__
-
 /* Linux uses a negative return value to indicate syscall errors,
    unlike most Unices, which use the condition codes' carry flag.
 
@@ -174,11 +172,17 @@
 
     Syscalls of more than 6 arguments are not supported.  */
 
+.extern long hahahaha;
+
 # undef	DO_CALL
 # define DO_CALL(syscall_name, args)		\
-    DOARGS_##args				\
+    DOARGS_##args				                  \
+    movl hahahaha@GOTPCREL(%rip), %eax;   \
+    cmpl $1, %eax;                      \
+    je L22;                             \
     movl $SYS_ify (syscall_name), %eax;		\
-    syscall;
+    syscall;                             \
+    L22:
 
 # define DOARGS_0 /* nothing */
 # define DOARGS_1 /* nothing */
