@@ -23,8 +23,6 @@
 /* This must be initialized data because commons can't have aliases.  */
 void *__curbrk = 0;
 
-volatile long hahaha = 0;
-
 int
 __brk (void *addr)
 {

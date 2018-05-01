@@ -18,8 +18,7 @@
 #include <stdlib.h>
 
 #undef	atoi
-
-long hahahaha = 1;
+volatile long hehehe = 2;
 /* Convert a string to an int.  */
 int
 atoi (const char *nptr)

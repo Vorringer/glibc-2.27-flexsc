@@ -172,13 +172,13 @@
 
     Syscalls of more than 6 arguments are not supported.  */
 
-.extern long hahahaha;
+.extern long hehehe;
 
 # undef	DO_CALL
 # define DO_CALL(syscall_name, args)		\
     DOARGS_##args				                  \
-    movl hahahaha@GOTPCREL(%rip), %eax;   \
-    cmpl $1, %eax;                      \
+    movl hehehe@GOTPCREL(%rip), %eax;   \
+    cmpl $2, %eax;                      \
     je L22;                             \
     movl $SYS_ify (syscall_name), %eax;		\
     syscall;                             \
@@ -242,29 +242,29 @@
 	internal_syscall##nr (number, err, args)
 
 #undef internal_syscall0
-#define internal_syscall0(number, err, dummy...)			\
-({									\
+#define internal_syscall0(number, err, dummy...)      \
+({                  \
   unsigned long int resultvar = 0;        \
+  extern void *_syscall_page;       \
+  extern int FLEXSC_REGISTERED;     \
   if (FLEXSC_REGISTERED) {          \
-  	int i, index;		\
-  	i = 0;		\
-  	index = -1;		\
-  	for (i = 0; i < 128; ++i) {		\
-  		if (*(short *)(_syscall_page + (i << 6) + 6) == 0) {		\
-  			*(short *)(_syscall_page + (i << 6) + 6) = 3;		\
-  			*(long *)(_syscall_page + (i << 6)) = number;		\
-  			index = i;		\
-  			*(short *)(_syscall_page + (i << 6) + 6) = 1;		\
-  			break;		\
-  		}			\
-  	}		\
-  	if (index != -1)	\
-  	while (1) {		\
-  		if (*(short *)(_syscall_page + (index << 6) + 6) == 2) {		\
-  			resultvar = *(long *)(_syscall_page + (index << 6) + 8);		\
-  			*(short *)(_syscall_page + (index << 6) + 6) = 0;		\
-  		}		\
-  	}		\
+    int i, index;   \
+    i = 0;    \
+    index = -1;   \
+    for (i = 0; i < 64; ++i) {   \
+      if (*(short *)(_syscall_page + (i << 6) + 6) == 0) {    \
+        *(short *)(_syscall_page + (i << 6) + 6) = 3;   \
+        *(long *)(_syscall_page + (i << 6)) = number;   \
+        *(short *)(_syscall_page + (i << 6) + 6) = 1;   \
+        index = i;    \
+        break;    \
+      }     \
+    }   \
+    if (index != -1) {      \
+      while (*(short *)(_syscall_page + (index << 6) + 6) != 2) asm("nop");    \
+      resultvar = *(long *)(_syscall_page + (index << 6) + 8);    \
+      *(short *)(_syscall_page + (index << 6) + 6) = 0;   \
+    }   \
   }           \
   else {        \
     asm volatile (              \
@@ -277,119 +277,284 @@
 })
 
 #undef internal_syscall1
-#define internal_syscall1(number, err, arg1)				\
-({									\
-    unsigned long int resultvar;					\
-    TYPEFY (arg1, __arg1) = ARGIFY (arg1);			 	\
-    register TYPEFY (arg1, _a1) asm ("rdi") = __arg1;			\
-    asm volatile (							\
-    "syscall\n\t"							\
-    : "=a" (resultvar)							\
-    : "0" (number), "r" (_a1)						\
-    : "memory", REGISTERS_CLOBBERED_BY_SYSCALL);			\
-    (long int) resultvar;						\
+#define internal_syscall1(number, err, arg1)        \
+({                  \
+    unsigned long int resultvar = 0;          \
+    extern void *_syscall_page;       \
+    extern int FLEXSC_REGISTERED;     \
+    if (FLEXSC_REGISTERED) {          \
+      int i;    \
+      volatile int index;   \
+      i = 0;    \
+      index = -1;   \
+      for (i = 0; i < 64; ++i) {   \
+        if (*(short *)(_syscall_page + (i << 6) + 6) == 0) {    \
+          *(short *)(_syscall_page + (i << 6) + 6) = 3;   \
+          *(long *)(_syscall_page + (i << 6)) = number;   \
+          *(long *)(_syscall_page + (i << 6) + 16) = (long)(arg1);    \
+          *(short *)(_syscall_page + (i << 6) + 6) = 1;   \
+          index = i;    \
+          break;    \
+        }     \
+      }   \
+      if (index != -1) {      \
+        while (*(short *)(_syscall_page + (index << 6) + 6) != 2) asm("nop");    \
+        resultvar = *(long *)(_syscall_page + (index << 6) + 8);    \
+        *(short *)(_syscall_page + (index << 6) + 6) = 0;   \
+      }   \
+    }           \
+    else {    \
+      TYPEFY (arg1, __arg1) = ARGIFY (arg1);        \
+      register TYPEFY (arg1, _a1) asm ("rdi") = __arg1;     \
+      asm volatile (              \
+      "syscall\n\t"             \
+      : "=a" (resultvar)              \
+      : "0" (number), "r" (_a1)           \
+      : "memory", REGISTERS_CLOBBERED_BY_SYSCALL);      \
+    }     \
+    (long int) resultvar;           \
 })
 
 #undef internal_syscall2
-#define internal_syscall2(number, err, arg1, arg2)			\
-({									\
-    unsigned long int resultvar;					\
-    TYPEFY (arg2, __arg2) = ARGIFY (arg2);			 	\
-    TYPEFY (arg1, __arg1) = ARGIFY (arg1);			 	\
-    register TYPEFY (arg2, _a2) asm ("rsi") = __arg2;			\
-    register TYPEFY (arg1, _a1) asm ("rdi") = __arg1;			\
-    asm volatile (							\
-    "syscall\n\t"							\
-    : "=a" (resultvar)							\
-    : "0" (number), "r" (_a1), "r" (_a2)				\
-    : "memory", REGISTERS_CLOBBERED_BY_SYSCALL);			\
-    (long int) resultvar;						\
+#define internal_syscall2(number, err, arg1, arg2)      \
+({                  \
+    unsigned long int resultvar = 0;          \
+    extern void *_syscall_page;       \
+    extern int FLEXSC_REGISTERED;     \
+    if (FLEXSC_REGISTERED) {          \
+      int i;    \
+      volatile int index;   \
+      i = 0;    \
+      index = -1;   \
+      for (i = 0; i < 64; ++i) {   \
+        if (*(short *)(_syscall_page + (i << 6) + 6) == 0) {    \
+          *(short *)(_syscall_page + (i << 6) + 6) = 3;   \
+          *(long *)(_syscall_page + (i << 6)) = number;   \
+          *(long *)(_syscall_page + (i << 6) + 16) = (long)(arg1);    \
+          *(long *)(_syscall_page + (i << 6) + 24) = (long)(arg2);    \
+          *(short *)(_syscall_page + (i << 6) + 6) = 1;   \
+          index = i;    \
+          break;    \
+        }     \
+      }   \
+      if (index != -1) {      \
+        while (*(short *)(_syscall_page + (index << 6) + 6) != 2) asm("nop");    \
+        resultvar = *(long *)(_syscall_page + (index << 6) + 8);    \
+        *(short *)(_syscall_page + (index << 6) + 6) = 0;   \
+      }   \
+    }           \
+    else {    \
+      TYPEFY (arg2, __arg2) = ARGIFY (arg2);        \
+      TYPEFY (arg1, __arg1) = ARGIFY (arg1);        \
+      register TYPEFY (arg2, _a2) asm ("rsi") = __arg2;     \
+      register TYPEFY (arg1, _a1) asm ("rdi") = __arg1;     \
+      asm volatile (              \
+      "syscall\n\t"             \
+      : "=a" (resultvar)              \
+      : "0" (number), "r" (_a1), "r" (_a2)        \
+      : "memory", REGISTERS_CLOBBERED_BY_SYSCALL);      \
+    }\
+    (long int) resultvar;           \
 })
 
 #undef internal_syscall3
-#define internal_syscall3(number, err, arg1, arg2, arg3)		\
-({									\
-    unsigned long int resultvar;					\
-    TYPEFY (arg3, __arg3) = ARGIFY (arg3);			 	\
-    TYPEFY (arg2, __arg2) = ARGIFY (arg2);			 	\
-    TYPEFY (arg1, __arg1) = ARGIFY (arg1);			 	\
-    register TYPEFY (arg3, _a3) asm ("rdx") = __arg3;			\
-    register TYPEFY (arg2, _a2) asm ("rsi") = __arg2;			\
-    register TYPEFY (arg1, _a1) asm ("rdi") = __arg1;			\
-    asm volatile (							\
-    "syscall\n\t"							\
-    : "=a" (resultvar)							\
-    : "0" (number), "r" (_a1), "r" (_a2), "r" (_a3)			\
-    : "memory", REGISTERS_CLOBBERED_BY_SYSCALL);			\
-    (long int) resultvar;						\
+#define internal_syscall3(number, err, arg1, arg2, arg3)    \
+({                  \
+    unsigned long int resultvar = 0;          \
+    extern void *_syscall_page;       \
+    extern int FLEXSC_REGISTERED;     \
+    if (FLEXSC_REGISTERED) {          \
+      int i;    \
+      volatile int index;   \
+      i = 0;    \
+      index = -1;   \
+      for (i = 0; i < 64; ++i) {   \
+        if (*(short *)(_syscall_page + (i << 6) + 6) == 0) {    \
+          *(short *)(_syscall_page + (i << 6) + 6) = 3;   \
+          *(long *)(_syscall_page + (i << 6)) = number;   \
+          *(long *)(_syscall_page + (i << 6) + 16) = (long)(arg1);    \
+          *(long *)(_syscall_page + (i << 6) + 24) = (long)(arg2);    \
+          *(long *)(_syscall_page + (i << 6) + 32) = (long)(arg3);    \
+          *(short *)(_syscall_page + (i << 6) + 6) = 1;   \
+          index = i;    \
+          break;    \
+        }     \
+      }   \
+      if (index != -1) {      \
+        while (*(short *)(_syscall_page + (index << 6) + 6) != 2) asm("nop");    \
+        resultvar = *(long *)(_syscall_page + (index << 6) + 8);    \
+        *(short *)(_syscall_page + (index << 6) + 6) = 0;   \
+      }   \
+    }           \
+    else {    \
+      TYPEFY (arg3, __arg3) = ARGIFY (arg3);        \
+      TYPEFY (arg2, __arg2) = ARGIFY (arg2);        \
+      TYPEFY (arg1, __arg1) = ARGIFY (arg1);        \
+      register TYPEFY (arg3, _a3) asm ("rdx") = __arg3;     \
+      register TYPEFY (arg2, _a2) asm ("rsi") = __arg2;     \
+      register TYPEFY (arg1, _a1) asm ("rdi") = __arg1;     \
+      asm volatile (              \
+      "syscall\n\t"             \
+      : "=a" (resultvar)              \
+      : "0" (number), "r" (_a1), "r" (_a2), "r" (_a3)     \
+      : "memory", REGISTERS_CLOBBERED_BY_SYSCALL);      \
+    }   \
+    (long int) resultvar;           \
 })
 
 #undef internal_syscall4
-#define internal_syscall4(number, err, arg1, arg2, arg3, arg4)		\
-({									\
-    unsigned long int resultvar;					\
-    TYPEFY (arg4, __arg4) = ARGIFY (arg4);			 	\
-    TYPEFY (arg3, __arg3) = ARGIFY (arg3);			 	\
-    TYPEFY (arg2, __arg2) = ARGIFY (arg2);			 	\
-    TYPEFY (arg1, __arg1) = ARGIFY (arg1);			 	\
-    register TYPEFY (arg4, _a4) asm ("r10") = __arg4;			\
-    register TYPEFY (arg3, _a3) asm ("rdx") = __arg3;			\
-    register TYPEFY (arg2, _a2) asm ("rsi") = __arg2;			\
-    register TYPEFY (arg1, _a1) asm ("rdi") = __arg1;			\
-    asm volatile (							\
-    "syscall\n\t"							\
-    : "=a" (resultvar)							\
-    : "0" (number), "r" (_a1), "r" (_a2), "r" (_a3), "r" (_a4)		\
-    : "memory", REGISTERS_CLOBBERED_BY_SYSCALL);			\
-    (long int) resultvar;						\
+#define internal_syscall4(number, err, arg1, arg2, arg3, arg4)    \
+({                  \
+    unsigned long int resultvar = 0;          \
+    extern void *_syscall_page;       \
+    extern int FLEXSC_REGISTERED;     \
+    if (FLEXSC_REGISTERED) {          \
+      int i;    \
+      volatile int index;   \
+      i = 0;    \
+      index = -1;   \
+      for (i = 0; i < 64; ++i) {   \
+        if (*(short *)(_syscall_page + (i << 6) + 6) == 0) {    \
+          *(short *)(_syscall_page + (i << 6) + 6) = 3;   \
+          *(long *)(_syscall_page + (i << 6)) = number;   \
+          *(long *)(_syscall_page + (i << 6) + 16) = (long)(arg1);    \
+          *(long *)(_syscall_page + (i << 6) + 24) = (long)(arg2);    \
+          *(long *)(_syscall_page + (i << 6) + 32) = (long)(arg3);    \
+          *(long *)(_syscall_page + (i << 6) + 40) = (long)(arg4);    \
+          *(short *)(_syscall_page + (i << 6) + 6) = 1;   \
+          index = i;    \
+          break;    \
+        }     \
+      }   \
+      if (index != -1) {      \
+        while (*(short *)(_syscall_page + (index << 6) + 6) != 2) asm("nop");    \
+        resultvar = *(long *)(_syscall_page + (index << 6) + 8);    \
+        *(short *)(_syscall_page + (index << 6) + 6) = 0;   \
+      }   \
+    }           \
+    else {    \
+      TYPEFY (arg4, __arg4) = ARGIFY (arg4);        \
+      TYPEFY (arg3, __arg3) = ARGIFY (arg3);        \
+      TYPEFY (arg2, __arg2) = ARGIFY (arg2);        \
+      TYPEFY (arg1, __arg1) = ARGIFY (arg1);        \
+      register TYPEFY (arg4, _a4) asm ("r10") = __arg4;     \
+      register TYPEFY (arg3, _a3) asm ("rdx") = __arg3;     \
+      register TYPEFY (arg2, _a2) asm ("rsi") = __arg2;     \
+      register TYPEFY (arg1, _a1) asm ("rdi") = __arg1;     \
+      asm volatile (              \
+      "syscall\n\t"             \
+      : "=a" (resultvar)              \
+      : "0" (number), "r" (_a1), "r" (_a2), "r" (_a3), "r" (_a4)    \
+      : "memory", REGISTERS_CLOBBERED_BY_SYSCALL);      \
+    }   \
+    (long int) resultvar;           \
 })
 
 #undef internal_syscall5
-#define internal_syscall5(number, err, arg1, arg2, arg3, arg4, arg5)	\
-({									\
-    unsigned long int resultvar;					\
-    TYPEFY (arg5, __arg5) = ARGIFY (arg5);			 	\
-    TYPEFY (arg4, __arg4) = ARGIFY (arg4);			 	\
-    TYPEFY (arg3, __arg3) = ARGIFY (arg3);			 	\
-    TYPEFY (arg2, __arg2) = ARGIFY (arg2);			 	\
-    TYPEFY (arg1, __arg1) = ARGIFY (arg1);			 	\
-    register TYPEFY (arg5, _a5) asm ("r8") = __arg5;			\
-    register TYPEFY (arg4, _a4) asm ("r10") = __arg4;			\
-    register TYPEFY (arg3, _a3) asm ("rdx") = __arg3;			\
-    register TYPEFY (arg2, _a2) asm ("rsi") = __arg2;			\
-    register TYPEFY (arg1, _a1) asm ("rdi") = __arg1;			\
-    asm volatile (							\
-    "syscall\n\t"							\
-    : "=a" (resultvar)							\
-    : "0" (number), "r" (_a1), "r" (_a2), "r" (_a3), "r" (_a4),		\
-      "r" (_a5)								\
-    : "memory", REGISTERS_CLOBBERED_BY_SYSCALL);			\
-    (long int) resultvar;						\
+#define internal_syscall5(number, err, arg1, arg2, arg3, arg4, arg5)  \
+({                  \
+    unsigned long int resultvar = 0;          \
+    extern void *_syscall_page;       \
+    extern int FLEXSC_REGISTERED;     \
+    if (FLEXSC_REGISTERED) {          \
+      int i;    \
+      volatile int index;   \
+      i = 0;    \
+      index = -1;   \
+      for (i = 0; i < 64; ++i) {   \
+        if (*(short *)(_syscall_page + (i << 6) + 6) == 0) {    \
+          *(short *)(_syscall_page + (i << 6) + 6) = 3;   \
+          *(long *)(_syscall_page + (i << 6)) = number;   \
+          *(long *)(_syscall_page + (i << 6) + 16) = (long)(arg1);    \
+          *(long *)(_syscall_page + (i << 6) + 24) = (long)(arg2);    \
+          *(long *)(_syscall_page + (i << 6) + 32) = (long)(arg3);    \
+          *(long *)(_syscall_page + (i << 6) + 40) = (long)(arg4);    \
+          *(long *)(_syscall_page + (i << 6) + 48) = (long)(arg5);    \
+          *(short *)(_syscall_page + (i << 6) + 6) = 1;   \
+          index = i;    \
+          break;    \
+        }     \
+      }   \
+      if (index != -1) {      \
+        while (*(short *)(_syscall_page + (index << 6) + 6) != 2) asm("nop");    \
+        resultvar = *(long *)(_syscall_page + (index << 6) + 8);    \
+        *(short *)(_syscall_page + (index << 6) + 6) = 0;   \
+      }   \
+    }           \
+    else {    \
+      TYPEFY (arg5, __arg5) = ARGIFY (arg5);        \
+      TYPEFY (arg4, __arg4) = ARGIFY (arg4);        \
+      TYPEFY (arg3, __arg3) = ARGIFY (arg3);        \
+      TYPEFY (arg2, __arg2) = ARGIFY (arg2);        \
+      TYPEFY (arg1, __arg1) = ARGIFY (arg1);        \
+      register TYPEFY (arg5, _a5) asm ("r8") = __arg5;      \
+      register TYPEFY (arg4, _a4) asm ("r10") = __arg4;     \
+      register TYPEFY (arg3, _a3) asm ("rdx") = __arg3;     \
+      register TYPEFY (arg2, _a2) asm ("rsi") = __arg2;     \
+      register TYPEFY (arg1, _a1) asm ("rdi") = __arg1;     \
+      asm volatile (              \
+      "syscall\n\t"             \
+      : "=a" (resultvar)              \
+      : "0" (number), "r" (_a1), "r" (_a2), "r" (_a3), "r" (_a4),   \
+        "r" (_a5)               \
+      : "memory", REGISTERS_CLOBBERED_BY_SYSCALL);      \
+    }     \
+    (long int) resultvar;           \
 })
 
 #undef internal_syscall6
 #define internal_syscall6(number, err, arg1, arg2, arg3, arg4, arg5, arg6) \
-({									\
-    unsigned long int resultvar;					\
-    TYPEFY (arg6, __arg6) = ARGIFY (arg6);			 	\
-    TYPEFY (arg5, __arg5) = ARGIFY (arg5);			 	\
-    TYPEFY (arg4, __arg4) = ARGIFY (arg4);			 	\
-    TYPEFY (arg3, __arg3) = ARGIFY (arg3);			 	\
-    TYPEFY (arg2, __arg2) = ARGIFY (arg2);			 	\
-    TYPEFY (arg1, __arg1) = ARGIFY (arg1);			 	\
-    register TYPEFY (arg6, _a6) asm ("r9") = __arg6;			\
-    register TYPEFY (arg5, _a5) asm ("r8") = __arg5;			\
-    register TYPEFY (arg4, _a4) asm ("r10") = __arg4;			\
-    register TYPEFY (arg3, _a3) asm ("rdx") = __arg3;			\
-    register TYPEFY (arg2, _a2) asm ("rsi") = __arg2;			\
-    register TYPEFY (arg1, _a1) asm ("rdi") = __arg1;			\
-    asm volatile (							\
-    "syscall\n\t"							\
-    : "=a" (resultvar)							\
-    : "0" (number), "r" (_a1), "r" (_a2), "r" (_a3), "r" (_a4),		\
-      "r" (_a5), "r" (_a6)						\
-    : "memory", REGISTERS_CLOBBERED_BY_SYSCALL);			\
-    (long int) resultvar;						\
+({                  \
+    unsigned long int resultvar = 0;          \
+    extern void *_syscall_page;       \
+    extern int FLEXSC_REGISTERED;     \
+    if (FLEXSC_REGISTERED) {          \
+      int i;    \
+      volatile int index;   \
+      i = 0;    \
+      index = -1;   \
+      for (i = 0; i < 64; ++i) {   \
+        if (*(short *)(_syscall_page + (i << 6) + 6) == 0) {    \
+          *(short *)(_syscall_page + (i << 6) + 6) = 3;   \
+          *(long *)(_syscall_page + (i << 6)) = number;   \
+          *(long *)(_syscall_page + (i << 6) + 16) = (long)(arg1);    \
+          *(long *)(_syscall_page + (i << 6) + 24) = (long)(arg2);    \
+          *(long *)(_syscall_page + (i << 6) + 32) = (long)(arg3);    \
+          *(long *)(_syscall_page + (i << 6) + 40) = (long)(arg4);    \
+          *(long *)(_syscall_page + (i << 6) + 48) = (long)(arg5);    \
+          *(long *)(_syscall_page + (i << 6) + 56) = (long)(arg6);    \
+          *(short *)(_syscall_page + (i << 6) + 6) = 1;   \
+          index = i;    \
+          break;    \
+        }     \
+      }   \
+      if (index != -1) {      \
+        while (*(short *)(_syscall_page + (index << 6) + 6) != 2) asm("nop");    \
+        resultvar = *(long *)(_syscall_page + (index << 6) + 8);    \
+        *(short *)(_syscall_page + (index << 6) + 6) = 0;   \
+      }   \
+    }           \
+    else {    \
+      TYPEFY (arg6, __arg6) = ARGIFY (arg6);        \
+      TYPEFY (arg5, __arg5) = ARGIFY (arg5);        \
+      TYPEFY (arg4, __arg4) = ARGIFY (arg4);        \
+      TYPEFY (arg3, __arg3) = ARGIFY (arg3);        \
+      TYPEFY (arg2, __arg2) = ARGIFY (arg2);        \
+      TYPEFY (arg1, __arg1) = ARGIFY (arg1);        \
+      register TYPEFY (arg6, _a6) asm ("r9") = __arg6;      \
+      register TYPEFY (arg5, _a5) asm ("r8") = __arg5;      \
+      register TYPEFY (arg4, _a4) asm ("r10") = __arg4;     \
+      register TYPEFY (arg3, _a3) asm ("rdx") = __arg3;     \
+      register TYPEFY (arg2, _a2) asm ("rsi") = __arg2;     \
+      register TYPEFY (arg1, _a1) asm ("rdi") = __arg1;     \
+      asm volatile (              \
+      "syscall\n\t"             \
+      : "=a" (resultvar)              \
+      : "0" (number), "r" (_a1), "r" (_a2), "r" (_a3), "r" (_a4),   \
+        "r" (_a5), "r" (_a6)            \
+      : "memory", REGISTERS_CLOBBERED_BY_SYSCALL);      \
+    }   \
+    (long int) resultvar;           \
 })
 
 # undef INTERNAL_SYSCALL_ERROR_P

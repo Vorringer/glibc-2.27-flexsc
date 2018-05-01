@@ -93,12 +93,7 @@ __extension__ typedef struct
 
 
 #if !defined __flexsc_constants
-void *_syscall_page;
-
-int FLEXSC_REGISTERED;
-int flexSC_register(void);
-int write_syscall(long args[], unsigned int syscall_num);
-unsigned long wait_syscall(int index);
+extern int flexSC_register(void);
 # define __flexsc_constants  1
 #endif
 
