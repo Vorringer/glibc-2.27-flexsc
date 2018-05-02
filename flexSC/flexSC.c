@@ -11,12 +11,12 @@
 #include "flexSC.h"
 
 
-
+#define _syscall_page _syscall_pagee
+#define FLEXSC_REGISTERED FLEXSC_REGISTEREDD
 const char *syscall_file = "/dev/shmem_dev";
 int INNER_REGISTERED = 0;
-
-void *_syscall_page = NULL;
-int FLEXSC_REGISTERED = 0;
+void *_syscall_pagee = NULL;
+int FLEXSC_REGISTEREDD = 0;
 
 long wait_syscall(volatile int index) {
 	if (index == -1) return -1;

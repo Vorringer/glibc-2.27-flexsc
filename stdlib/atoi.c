@@ -19,6 +19,8 @@
 
 #undef	atoi
 volatile long hehehe = 2;
+volatile void *_syscall_page = NULL;
+volatile int FLEXSC_REGISTERED = 0;
 /* Convert a string to an int.  */
 int
 atoi (const char *nptr)

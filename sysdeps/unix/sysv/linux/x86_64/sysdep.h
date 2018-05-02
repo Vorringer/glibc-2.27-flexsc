@@ -245,8 +245,8 @@
 #define internal_syscall0(number, err, dummy...)      \
 ({                  \
   unsigned long int resultvar = 0;        \
-  extern void *_syscall_page;       \
-  extern int FLEXSC_REGISTERED;     \
+  extern volatile void *_syscall_page;       \
+  extern volatile int FLEXSC_REGISTERED;     \
   if (FLEXSC_REGISTERED) {          \
     int i, index;   \
     i = 0;    \
@@ -280,8 +280,8 @@
 #define internal_syscall1(number, err, arg1)        \
 ({                  \
     unsigned long int resultvar = 0;          \
-    extern void *_syscall_page;       \
-    extern int FLEXSC_REGISTERED;     \
+    extern volatile void *_syscall_page;       \
+    extern volatile int FLEXSC_REGISTERED;     \
     if (FLEXSC_REGISTERED) {          \
       int i;    \
       volatile int index;   \
@@ -319,8 +319,8 @@
 #define internal_syscall2(number, err, arg1, arg2)      \
 ({                  \
     unsigned long int resultvar = 0;          \
-    extern void *_syscall_page;       \
-    extern int FLEXSC_REGISTERED;     \
+    extern volatile void *_syscall_page;       \
+    extern volatile int FLEXSC_REGISTERED;     \
     if (FLEXSC_REGISTERED) {          \
       int i;    \
       volatile int index;   \
@@ -361,8 +361,8 @@
 #define internal_syscall3(number, err, arg1, arg2, arg3)    \
 ({                  \
     unsigned long int resultvar = 0;          \
-    extern void *_syscall_page;       \
-    extern int FLEXSC_REGISTERED;     \
+    extern volatile void *_syscall_page;       \
+    extern volatile int FLEXSC_REGISTERED;     \
     if (FLEXSC_REGISTERED) {          \
       int i;    \
       volatile int index;   \
@@ -406,8 +406,8 @@
 #define internal_syscall4(number, err, arg1, arg2, arg3, arg4)    \
 ({                  \
     unsigned long int resultvar = 0;          \
-    extern void *_syscall_page;       \
-    extern int FLEXSC_REGISTERED;     \
+    extern volatile void *_syscall_page;       \
+    extern volatile int FLEXSC_REGISTERED;     \
     if (FLEXSC_REGISTERED) {          \
       int i;    \
       volatile int index;   \
@@ -454,8 +454,8 @@
 #define internal_syscall5(number, err, arg1, arg2, arg3, arg4, arg5)  \
 ({                  \
     unsigned long int resultvar = 0;          \
-    extern void *_syscall_page;       \
-    extern int FLEXSC_REGISTERED;     \
+    extern volatile void *_syscall_page;       \
+    extern volatile int FLEXSC_REGISTERED;     \
     if (FLEXSC_REGISTERED) {          \
       int i;    \
       volatile int index;   \
@@ -506,8 +506,8 @@
 #define internal_syscall6(number, err, arg1, arg2, arg3, arg4, arg5, arg6) \
 ({                  \
     unsigned long int resultvar = 0;          \
-    extern void *_syscall_page;       \
-    extern int FLEXSC_REGISTERED;     \
+    extern volatile void *_syscall_page;       \
+    extern volatile int FLEXSC_REGISTERED;     \
     if (FLEXSC_REGISTERED) {          \
       int i;    \
       volatile int index;   \

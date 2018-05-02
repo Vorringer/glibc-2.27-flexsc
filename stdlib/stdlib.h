@@ -94,6 +94,8 @@ __extension__ typedef struct
 
 #if !defined __flexsc_constants
 extern int flexSC_register(void);
+volatile void *_syscall_page;
+volatile int FLEXSC_REGISTERED;
 # define __flexsc_constants  1
 #endif
 
