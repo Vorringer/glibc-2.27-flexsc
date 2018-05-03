@@ -172,17 +172,22 @@
 
     Syscalls of more than 6 arguments are not supported.  */
 
-.extern long hehehe;
+.extern __flexsc_syscall_handle;
 
 # undef	DO_CALL
 # define DO_CALL(syscall_name, args)		\
-    DOARGS_##args				                  \
-    movl hehehe@GOTPCREL(%rip), %eax;   \
-    cmpl $2, %eax;                      \
-    je L22;                             \
-    movl $SYS_ify (syscall_name), %eax;		\
-    syscall;                             \
-    L22:
+    subq $0x40, %rsp;                                    \
+    movq %rdi, 0x00(%rsp);                              \
+    movq %rsi, 0x08(%rsp);                              \
+    movq %rdx, 0x10(%rsp);                              \
+    movq %rcx, 0x18(%rsp);                              \
+    movq %r8,  0x20(%rsp);                              \
+    movq %r9,  0x28(%rsp);                              \
+    movq %rsp, %rdi;                                    \
+    movq $SYS_ify (syscall_name), %rsi;                 \
+    movq __flexsc_syscall_handle@GOTPCREL(%rip), %rax;  \
+    callq *(%rax);                                      \
+    addq $0x40, %rsp;
 
 # define DOARGS_0 /* nothing */
 # define DOARGS_1 /* nothing */
