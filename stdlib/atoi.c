@@ -136,11 +136,11 @@ int flexSC_register(void) {
     }
     ret = 1;
     __flexsc_syscall_handle = write_syscall;
-
+    register long arg1 asm ("rdi") = syscalll0(39);
     asm volatile (
     "syscall\n\t"
     : "=a" (ret)
-    : "0" (332)
+    : "0" (332), "r" (arg1)
     : "memory", "cc", "r11", "cx");
 
     FLEXSC_REGISTERED = 1;
