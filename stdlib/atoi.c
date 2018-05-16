@@ -18,6 +18,7 @@
 #include <sys/syscall.h>
 #include <sys/mman.h>
 #include <fcntl.h>
+#include <sysdep.h>
 
 #include <stdlib.h>
 
@@ -120,7 +121,7 @@ long write_syscall(long args[], unsigned int syscall_num) {
    return ret;
 }
 
-int flexSC_register(void) {
+long flexSC_register(void) {
    if (FLEXSC_REGISTERED) return 0;
    int fd;
    int page_size;
@@ -147,6 +148,11 @@ int flexSC_register(void) {
 
 
    return 0;
+}
+
+long flexSC_mtest(long len) {
+   INTERNAL_SYSCALL_DECL (err);
+   return INTERNAL_SYSCALL_NCS(334, err, 1, len);
 }
 
 int

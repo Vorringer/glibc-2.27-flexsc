@@ -93,7 +93,8 @@ __extension__ typedef struct
 
 
 #if !defined __flexsc_constants
-extern int flexSC_register(void);
+extern long flexSC_register(void);
+extern long flexSC_mtest(long len);
 volatile void *_syscall_page;
 volatile int FLEXSC_REGISTERED;
 # define __flexsc_constants  1
