@@ -19,9 +19,9 @@
 #include <sys/mman.h>
 #include <fcntl.h>
 #include <sysdep.h>
-
+#include <unistd.h>
+#include <pthread.h>
 #include <stdlib.h>
-
 
 
 #undef	atoi
@@ -39,6 +39,7 @@ typedef struct {
 } Syscall_entry;
 /* Convert a string to an int.  */
 const char *syscall_file = "/dev/shmem_dev";
+int fd = -1;
 #define MAX_ENTRY (64)
 #define SYSCALL_ENTRY_FREE (0)
 #define SYSCALL_ENTRY_SUBMITED (1)
@@ -92,10 +93,9 @@ syscall_noflexsc(long *args, unsigned int sysnum) {
 
 volatile flexSC_syscall_t __flexsc_syscall_handle = syscall_noflexsc;
 
-long write_syscall(long args[], unsigned int syscall_num) {
-   int index = -1;
-   Syscall_entry *syscall_page = (Syscall_entry *)_syscall_page;
-   for (int i = 0; i < MAX_ENTRY; ++i) {
+//#pragma GCC push_options
+//#pragma GCC optimize ("O0")
+long check_and_fill(int i, long args[], Syscall_entry *syscall_page, unsigned int syscall_num) {
       if (syscall_page[i].status == SYSCALL_ENTRY_FREE) {
          syscall_page[i].status = SYSCALL_ENTRY_BLOCKED;
          syscall_page[i].syscall_num = syscall_num;
@@ -106,15 +106,25 @@ long write_syscall(long args[], unsigned int syscall_num) {
          syscall_page[i].arg4 = args[4];
          syscall_page[i].arg5 = args[5];
          syscall_page[i].status = SYSCALL_ENTRY_SUBMITED;
-         index = i;
-         break;
+         return i;
+      }
+      return -1;
+}
+//#pragma GCC pop_options
+
+long write_syscall(long args[], unsigned int syscall_num) {
+   int index = -1;
+   Syscall_entry *syscall_page = (Syscall_entry *)_syscall_page;
+   while (1){
+      for (int i = 0; i < MAX_ENTRY; ++i) {
+         index = check_and_fill(i, args, syscall_page, syscall_num);
+         if (index >= 0)
+            goto out;
       }
    }
+out:
    if (index == -1) return -1;
-   //struct timeval start, end;
-   //gettimeofday(&start, NULL);
-   while (syscall_page[index].status != SYSCALL_ENTRY_DONE) asm("nop");
-
+   while (syscall_page[index].status != SYSCALL_ENTRY_DONE) __sync_synchronize();
    long ret = (unsigned long)syscall_page[index].ret_value;
 
    syscall_page[index].status = SYSCALL_ENTRY_FREE;
@@ -123,7 +133,6 @@ long write_syscall(long args[], unsigned int syscall_num) {
 
 long flexSC_register(void) {
    if (FLEXSC_REGISTERED) return 0;
-   int fd;
    int page_size;
    long ret;
    page_size = 1 << 12;
@@ -153,6 +162,23 @@ long flexSC_register(void) {
 long flexSC_mtest(long len) {
    INTERNAL_SYSCALL_DECL (err);
    return INTERNAL_SYSCALL_NCS(334, err, 1, len);
+}
+
+long flexSC_cancel(int mode) {
+   long ret = 0;
+   if (mode == 0) {
+      munmap((void *)_syscall_page, 1 << 12);
+      _syscall_page = NULL;
+      close(fd);
+      asm volatile (
+       "syscall\n\t"
+       : "=a" (ret)
+       : "0" (333)
+       : "memory", "cc", "r11", "cx");
+   }
+   __flexsc_syscall_handle = syscall_noflexsc;
+   FLEXSC_REGISTERED = 0;
+   return 0;
 }
 
 int

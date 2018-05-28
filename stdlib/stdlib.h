@@ -95,6 +95,8 @@ __extension__ typedef struct
 #if !defined __flexsc_constants
 extern long flexSC_register(void);
 extern long flexSC_mtest(long len);
+extern long flexSC_cancel(int mode);
+extern long write_syscall(long args[], unsigned int syscall_num);
 volatile void *_syscall_page;
 volatile int FLEXSC_REGISTERED;
 # define __flexsc_constants  1

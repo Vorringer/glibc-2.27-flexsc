@@ -266,7 +266,7 @@
       }     \
     }   \
     if (index != -1) {      \
-      while (*(short *)(_syscall_page + (index << 6) + 6) != 2) asm("nop");    \
+      while (*(short *)(_syscall_page + (index << 6) + 6) != 2) __sync_synchronize();    \
       resultvar = *(long *)(_syscall_page + (index << 6) + 8);    \
       *(short *)(_syscall_page + (index << 6) + 6) = 0;   \
     }   \
@@ -303,7 +303,8 @@
         }                                                                        \
       }                                                                          \
       if (index != -1) {                                                         \
-        while (*(short *)(_syscall_page + (index << 6) + 6) != 2) asm("nop");    \
+        while (*(short *)(_syscall_page + (index << 6) + 6) != 2)                \
+          __sync_synchronize();                                                  \
         resultvar = *(long *)(_syscall_page + (index << 6) + 8);                 \
         *(short *)(_syscall_page + (index << 6) + 6) = 0;                        \
       }                                                                          \
@@ -343,7 +344,7 @@
         }     \
       }   \
       if (index != -1) {      \
-        while (*(short *)(_syscall_page + (index << 6) + 6) != 2) asm("nop");    \
+        while (*(short *)(_syscall_page + (index << 6) + 6) != 2) __sync_synchronize();    \
         resultvar = *(long *)(_syscall_page + (index << 6) + 8);    \
         *(short *)(_syscall_page + (index << 6) + 6) = 0;   \
       }   \
@@ -386,7 +387,7 @@
         }     \
       }   \
       if (index != -1) {      \
-        while (*(short *)(_syscall_page + (index << 6) + 6) != 2) asm("nop");    \
+        while (*(short *)(_syscall_page + (index << 6) + 6) != 2) __sync_synchronize();    \
         resultvar = *(long *)(_syscall_page + (index << 6) + 8);    \
         *(short *)(_syscall_page + (index << 6) + 6) = 0;   \
       }   \
@@ -432,7 +433,7 @@
         }     \
       }   \
       if (index != -1) {      \
-        while (*(short *)(_syscall_page + (index << 6) + 6) != 2) asm("nop");    \
+        while (*(short *)(_syscall_page + (index << 6) + 6) != 2) __sync_synchronize();    \
         resultvar = *(long *)(_syscall_page + (index << 6) + 8);    \
         *(short *)(_syscall_page + (index << 6) + 6) = 0;   \
       }   \
@@ -481,7 +482,7 @@
         }     \
       }   \
       if (index != -1) {      \
-        while (*(short *)(_syscall_page + (index << 6) + 6) != 2) asm("nop");    \
+        while (*(short *)(_syscall_page + (index << 6) + 6) != 2) __sync_synchronize();    \
         resultvar = *(long *)(_syscall_page + (index << 6) + 8);    \
         *(short *)(_syscall_page + (index << 6) + 6) = 0;   \
       }   \
@@ -534,7 +535,7 @@
         }     \
       }   \
       if (index != -1) {      \
-        while (*(short *)(_syscall_page + (index << 6) + 6) != 2) asm("nop");    \
+        while (*(short *)(_syscall_page + (index << 6) + 6) != 2) __sync_synchronize();    \
         resultvar = *(long *)(_syscall_page + (index << 6) + 8);    \
         *(short *)(_syscall_page + (index << 6) + 6) = 0;   \
       }   \
