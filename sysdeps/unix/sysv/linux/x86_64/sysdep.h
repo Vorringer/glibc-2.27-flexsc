@@ -185,7 +185,7 @@
     movq %r9,  0x28(%rsp);                              \
     movq %rsp, %rdi;                                    \
     movq $SYS_ify (syscall_name), %rsi;                 \
-    movq __flexsc_syscall_handle@GOTPCREL(%rip), %rax;  \
+    movq __asyncSC_syscall_handle@GOTPCREL(%rip), %rax;  \
     callq *(%rax);                                      \
     addq $0x40, %rsp;
 
